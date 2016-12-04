@@ -25,7 +25,7 @@ type Disk struct {
 }
 
 type Spice struct {
-	Port   int
+	Port int
 }
 
 type tomlConfig struct {
@@ -41,7 +41,6 @@ func (c Iface) BuildArgs() []string {
 		"-net", fmt.Sprintf("nic,model=%s", c.Model),
 		"-net", fmt.Sprintf("tap,ifname=%s,script=no,downscript=no,vhost=on",
 			"tap0"),
-		// t.Iface),
 	}
 }
 
@@ -128,12 +127,11 @@ func PowerDown() (err error) {
 
 	defer sock.Close()
 
-	result, err := sock.Command("system_powerdown", nil)
+	_, err = sock.Command("system_powerdown", nil)
 	if err != nil {
 		return
 	}
 
-	fmt.Printf("Got %v\n", result)
 	return nil
 }
 
