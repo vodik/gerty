@@ -171,6 +171,8 @@ func main() {
 	}
 
 	exit_chan := make(chan int)
+	shutting_down := false
+
 	go func() {
 		for {
 			s := <-signal_chan
@@ -184,9 +186,16 @@ func main() {
 				fmt.Printf("%s\n", res)
 				exit_chan <- ret
 			case syscall.SIGINT:
-				fmt.Printf("Sending ACPI halt signal to vm...\n")
-				if err = PowerDown(); err != nil {
-					panic(err)
+				if !shutting_down {
+					fmt.Printf("Sending ACPI halt signal to vm...\n")
+					if err = PowerDown(); err != nil {
+						panic(err)
+					}
+					fmt.Printf("VM signalled to shutdown... Press Ctrl+C to shutdown immediately.\n")
+					shutting_down = true
+				} else {
+					fmt.Println("Stopping...")
+					exit_chan <- 0
 				}
 			default:
 				fmt.Println("Stopping...")
