@@ -4,8 +4,8 @@ ip="$(ip -o addr show dev eth0 | awk '/inet / {print $4}' | cut -f1 -d/)"
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 iptables -I FORWARD 1 -i tap0 -j ACCEPT
 iptables -I FORWARD 1 -o tap0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-iptables -t nat -A PREROUTING -p tcp -d $ip ! --dport 5900 -j DNAT --to-destination 172.18.46.2
-iptables -t nat -A PREROUTING -p udp -d $ip -j DNAT --to-destination 172.18.46.2
-iptables -t nat -A PREROUTING -p icmp -d $ip -j DNAT --to-destination 172.18.46.2
+iptables -t nat -A PREROUTING -p tcp -d $ip ! --dport 5900 -j DNAT --to-destination 172.18.47.2
+iptables -t nat -A PREROUTING -p udp -d $ip -j DNAT --to-destination 172.18.47.2
+iptables -t nat -A PREROUTING -p icmp -d $ip -j DNAT --to-destination 172.18.47.2
 
 exec ./gerty "$@"
