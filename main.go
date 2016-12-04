@@ -24,9 +24,14 @@ type Disk struct {
 	Model  string
 }
 
+type Spice struct {
+	Port   int
+}
+
 type tomlConfig struct {
 	Memory string
 	DHCP   networkConfig
+	Spice  Spice
 	Ifaces []Iface
 	Disks  []Disk
 }
@@ -47,6 +52,14 @@ func (c Disk) BuildArgs() []string {
 	}
 }
 
+func (c Spice) BuildArgs() []string {
+	return []string{
+		"-vga", "qxl",
+		"-spice", fmt.Sprintf("port=%d,disable-ticketing",
+			c.Port),
+	}
+}
+
 type QemuConfig interface {
 	BuildArgs() []string
 }
@@ -55,10 +68,10 @@ func StartQemu(config tomlConfig) (cmd *exec.Cmd, err error) {
 	fullArgs := []string{
 		"--enable-kvm", "-m", config.Memory,
 		"-boot", "order=d",
-		"-vga", "qxl",
-		"-spice", "port=5900,disable-ticketing",
 		"-monitor", "none",
 		"-qmp", "unix:/run/qmp,server,nowait"}
+
+	fullArgs = append(fullArgs, config.Spice.BuildArgs()...)
 
 	for _, c := range config.Ifaces {
 		fullArgs = append(fullArgs, c.BuildArgs()...)
