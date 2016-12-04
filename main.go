@@ -16,6 +16,7 @@ import (
 
 type Iface struct {
 	Model string
+	DHCP  string
 }
 
 type Disk struct {
@@ -30,7 +31,6 @@ type Spice struct {
 
 type tomlConfig struct {
 	Memory string
-	DHCP   networkConfig
 	Spice  Spice
 	Ifaces []Iface
 	Disks  []Disk
@@ -80,7 +80,6 @@ func StartQemu(config tomlConfig) (cmd *exec.Cmd, err error) {
 		fullArgs = append(fullArgs, c.BuildArgs()...)
 	}
 
-	fmt.Println(fullArgs)
 	cmd = exec.Command("/usr/bin/qemu-system-x86_64", fullArgs...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
@@ -159,12 +158,11 @@ func main() {
 		syscall.SIGINT,
 		syscall.SIGTERM)
 
-	tap, err := CreateNetwork(config.DHCP)
+	tap, err := CreateNetwork(config.Ifaces[0].DHCP)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Starting QEMU!\n")
 	_, err = StartQemu(config)
 	if err != nil {
 		panic(err)

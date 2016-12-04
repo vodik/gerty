@@ -10,9 +10,6 @@ crappy). Actually, the whole code base is a mess. My first Go program.
 ```toml
 memory = "1024"
 
-[dhcp]
-subnet = "172.18.47.1/30"  # TODO: move into ifaces
-
 [spice]
 port = 5900
 
@@ -22,5 +19,6 @@ format = "qcow2"
 image = "disk.qcow2"
 
 [[ifaces]]
+dhcp = "172.18.47.0/30"
 model = "virtio"
 ```
