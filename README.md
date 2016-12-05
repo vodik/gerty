@@ -8,7 +8,8 @@ crappy). Actually, the whole code base is a mess. My first Go program.
 ### Example config
 
 ```toml
-memory = "1024"
+smp = 2
+memory = "1024M"
 
 [spice]
 port = 5900

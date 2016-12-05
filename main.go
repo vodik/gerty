@@ -30,6 +30,7 @@ type Spice struct {
 }
 
 type tomlConfig struct {
+	Smp    int
 	Memory string
 	Spice  Spice
 	Ifaces []Iface
@@ -65,7 +66,9 @@ type QemuConfig interface {
 
 func StartQemu(config tomlConfig) (cmd *exec.Cmd, err error) {
 	fullArgs := []string{
-		"--enable-kvm", "-m", config.Memory,
+		"--enable-kvm",
+		"-cpu", "host", "-smp", strconv.Itoa(config.Smp),
+		"-m", config.Memory,
 		"-boot", "order=d",
 		"-monitor", "none",
 		"-qmp", "unix:/run/qmp,server,nowait"}
