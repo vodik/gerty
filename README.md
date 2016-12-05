@@ -14,12 +14,12 @@ memory = "1024M"
 [spice]
 port = 5900
 
-[[disks]]
+[[drive]]
 model = "virtio"
 format = "qcow2"
 image = "disk.qcow2"
 
-[[ifaces]]
+[[netdev]]
 dhcp = "172.18.47.0/30"
 model = "virtio"
 ```

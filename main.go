@@ -15,15 +15,17 @@ import (
 	"time"
 )
 
-type Iface struct {
-	Model string
-	DHCP  string
+type Netdev struct {
+	Model  string
+	Subnet string
 }
 
-type Disk struct {
-	Image  string
-	Format string
-	Model  string
+type Drive struct {
+	File   string
+	Model  string `toml:"model,omitempty"`
+	Media  string `toml:"media,omitempty"`
+	Format string `toml:"format,omitempty"`
+	Cache  string `toml:"cache,omitempty"`
 }
 
 type Spice struct {
@@ -31,25 +33,31 @@ type Spice struct {
 }
 
 type tomlConfig struct {
-	Smp    int
-	Memory string
-	Spice  Spice
-	Ifaces []Iface
-	Disks  []Disk
+	SMP     int `toml:"smp"`
+	Memory  string
+	Spice   Spice
+	Netdevs []Netdev `toml:"netdev,omitempty"`
+	Drives  []Drive  `toml:"drive,omitempty"`
 }
 
-func (c Iface) BuildArgs() []string {
+func (c Netdev) BuildArgs() []string {
 	return []string{
-		"-net", fmt.Sprintf("nic,model=%s", c.Model),
-		"-net", fmt.Sprintf("tap,ifname=%s,script=no,downscript=no,vhost=on",
-			"tap0"),
+		"-netdev", fmt.Sprintf("tap,id=%s,ifname=%s,script=no,downscript=no",
+			"tap0", "tap0"),
+		"-device", fmt.Sprintf("virtio-net,netdev=%s", "tap0"),
 	}
 }
 
-func (c Disk) BuildArgs() []string {
+func (c Drive) BuildArgs() []string {
+	if c.Media == "cdrom" {
+		return []string{
+			"-drive", fmt.Sprintf("file=%s,media=%s",
+				c.File, c.Media),
+		}
+	}
 	return []string{
-		"-drive", fmt.Sprintf("format=%s,file=%s,cache=writeback,if=%s",
-			c.Format, c.Image, c.Model),
+		"-drive", fmt.Sprintf("format=%s,file=%s,cache=%s,if=%s",
+			c.Format, c.File, c.Cache, c.Model),
 	}
 }
 
@@ -68,7 +76,7 @@ type QemuConfig interface {
 func StartQemu(config tomlConfig) (cmd *exec.Cmd, err error) {
 	fullArgs := []string{
 		"--enable-kvm",
-		"-cpu", "host", "-smp", strconv.Itoa(config.Smp),
+		"-cpu", "host", "-smp", strconv.Itoa(config.SMP),
 		"-m", config.Memory,
 		"-boot", "order=d",
 		"-monitor", "none",
@@ -76,11 +84,11 @@ func StartQemu(config tomlConfig) (cmd *exec.Cmd, err error) {
 
 	fullArgs = append(fullArgs, config.Spice.BuildArgs()...)
 
-	for _, c := range config.Ifaces {
+	for _, c := range config.Netdevs {
 		fullArgs = append(fullArgs, c.BuildArgs()...)
 	}
 
-	for _, c := range config.Disks {
+	for _, c := range config.Drives {
 		fullArgs = append(fullArgs, c.BuildArgs()...)
 	}
 
@@ -162,7 +170,7 @@ func main() {
 		syscall.SIGINT,
 		syscall.SIGTERM)
 
-	tap, err := CreateNetwork(config.Ifaces[0].DHCP)
+	tap, err := CreateNetwork(config.Netdevs[0].Subnet)
 	if err != nil {
 		panic(err)
 	}
