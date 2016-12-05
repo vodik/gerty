@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 )
 
 type Iface struct {
@@ -198,6 +199,18 @@ func main() {
 					fmt.Println("Stopping...")
 					exit_chan <- 0
 				}
+			case syscall.SIGTERM:
+				fmt.Printf("Sending ACPI halt signal to vm...\n")
+				if err = PowerDown(); err != nil {
+					panic(err)
+				}
+				fmt.Printf("VM signalled to shutdown... Press Ctrl+C to shutdown immediately.\n")
+				go func() {
+					time.Sleep(time.Second * 60)
+					fmt.Println("Timed out, stopping...")
+					exit_chan <- 0
+				}()
+				shutting_down = true
 			default:
 				fmt.Println("Stopping...")
 				exit_chan <- 0
