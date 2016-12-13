@@ -8,4 +8,4 @@ iptables -t nat -A PREROUTING -p tcp -d $ip ! --dport 5900 -j DNAT --to-destinat
 iptables -t nat -A PREROUTING -p udp -d $ip -j DNAT --to-destination 172.18.47.2
 iptables -t nat -A PREROUTING -p icmp -d $ip -j DNAT --to-destination 172.18.47.2
 
-exec ./gerty "$@"
+exec /usr/bin/gerty "$@"
