@@ -73,7 +73,7 @@ type QemuConfig interface {
 	BuildArgs() []string
 }
 
-func StartQemu(config tomlConfig) (cmd *exec.Cmd, err error) {
+func StartQemu(config tomlConfig, snapshot bool) (cmd *exec.Cmd, err error) {
 	fullArgs := []string{
 		"--enable-kvm",
 		"-cpu", "host", "-smp", strconv.Itoa(config.SMP),
@@ -90,6 +90,10 @@ func StartQemu(config tomlConfig) (cmd *exec.Cmd, err error) {
 
 	for _, c := range config.Drives {
 		fullArgs = append(fullArgs, c.BuildArgs()...)
+	}
+
+	if snapshot {
+		fullArgs = append(fullArgs, "-snapshot")
 	}
 
 	cmd = exec.Command("/usr/bin/qemu-system-x86_64", fullArgs...)
@@ -147,6 +151,7 @@ func PowerDown() (err error) {
 }
 
 func main() {
+	snapshotFlag := flag.Bool("snapshot", false, "snapshot disks")
 	configFile := flag.String("c", "", "config file to load")
 	flag.Parse()
 
@@ -175,7 +180,7 @@ func main() {
 		panic(err)
 	}
 
-	_, err = StartQemu(config)
+	_, err = StartQemu(config, *snapshotFlag)
 	if err != nil {
 		panic(err)
 	}
