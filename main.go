@@ -3,9 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/naoina/toml"
-	"github.com/quadrifoglio/go-qmp"
-	"github.com/vishvananda/netlink"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -13,6 +10,10 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/naoina/toml"
+	"github.com/quadrifoglio/go-qmp"
+	"github.com/vishvananda/netlink"
 )
 
 type Netdev struct {
@@ -64,8 +65,7 @@ func (c Drive) BuildArgs() []string {
 func (c Spice) BuildArgs() []string {
 	return []string{
 		"-vga", "qxl",
-		"-spice", fmt.Sprintf("port=%d,disable-ticketing",
-			c.Port),
+		"-spice", fmt.Sprintf("port=%d,disable-ticketing", c.Port),
 	}
 }
 

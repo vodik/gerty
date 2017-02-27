@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/krolaw/dhcp4"
-	"github.com/vishvananda/netlink"
 	"net"
 	"time"
+
+	"github.com/krolaw/dhcp4"
+	"github.com/vishvananda/netlink"
 )
 
 type networkConfig struct {
